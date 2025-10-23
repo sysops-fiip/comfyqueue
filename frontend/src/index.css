@@ -1,0 +1,51 @@
+/* index.css */
+
+/* Import Bootstrap first */
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* Reset Vite defaults that constrain layout */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Ensure body acts as Bootstrap’s base */
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-family: "Source Sans Pro", system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+/* Anchor tag defaults */
+a {
+  color: var(--bs-link-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--bs-link-hover-color);
+  text-decoration: underline;
+}
+
+/* Headings and text should adapt automatically */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+/* Optional small tweaks */
+button {
+  font-family: inherit;
+}
