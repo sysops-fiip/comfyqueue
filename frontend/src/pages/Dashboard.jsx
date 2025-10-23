@@ -43,6 +43,11 @@ export default function Dashboard() {
       loadJobs(); // Reload jobs when a new one arrives
     });
 
+    socket.on("job_update", (data) => {
+      console.log("Job status update:", data);
+      loadJobs(); // Reload jobs when status changes
+    });
+
     return () => {
       socket.disconnect();
     };
