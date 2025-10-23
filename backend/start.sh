@@ -25,5 +25,5 @@ npm run build
 # --- Step 3: Start Flask backend ---
 echo -e "${GREEN}🚀 Starting Flask backend...${NC}"
 cd "$BACKEND_DIR" || exit
-source venv/bin/activate
+source ../venv/bin/activate
 python app.py
