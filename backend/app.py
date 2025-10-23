@@ -1,7 +1,7 @@
 # backend/app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from flask_socketio import SocketIO
 from models import db, bcrypt
 from auth import auth_bp
@@ -65,9 +65,17 @@ def init_db():
             filename TEXT,
             status TEXT,
             node TEXT,
+            user TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    # Migration: Add user column if it doesn't exist
+    try:
+        c.execute("ALTER TABLE jobs ADD COLUMN user TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        # Column already exists, ignore
+        pass
     conn.commit()
     conn.close()
 
@@ -77,18 +85,35 @@ init_db()
 # --- API route: upload ---
 # =====================================================
 @app.route("/upload", methods=["POST"])
+@jwt_required()
 def upload():
+    username = get_jwt_identity()
     file = request.files["file"]
     dest = os.path.join("../jobs", file.filename)
     file.save(dest)
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("INSERT INTO jobs(filename,status,node) VALUES(?,?,?)",
-              (file.filename, "pending", None))
+    c.execute("INSERT INTO jobs(filename,status,node,user) VALUES(?,?,?,?)",
+              (file.filename, "pending", None, username))
     conn.commit()
     conn.close()
-    socketio.emit("new_job", {"file": file.filename})
+    socketio.emit("new_job", {"file": file.filename, "user": username})
     return jsonify({"ok": True})
+
+# =====================================================
+# --- API route: get jobs ---
+# =====================================================
+@app.route("/api/jobs", methods=["GET"])
+@jwt_required()
+def get_jobs():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT id, filename, status, node, user, created_at FROM jobs ORDER BY created_at DESC")
+    rows = c.fetchall()
+    conn.close()
+    jobs = [dict(row) for row in rows]
+    return jsonify(jobs)
 
 # =====================================================
 # ✅ FRONTEND SERVING (SPA-safe with console tracing)

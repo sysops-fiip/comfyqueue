@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
+import { io } from "socket.io-client";
 import DashboardUI from "../DashboardUI";
 
 export default function Dashboard() {
@@ -20,15 +21,31 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch jobs (placeholder - needs backend endpoint)
+  // Fetch jobs
   const loadJobs = async () => {
-    // TODO: Implement when jobs endpoint is ready
-    setJobs([]);
+    try {
+      const res = await axios.get(`${api}/api/jobs`);
+      setJobs(res.data);
+    } catch (err) {
+      console.error("Failed to load jobs:", err);
+    }
   };
 
   useEffect(() => {
     loadNodes();
     loadJobs();
+
+    // Setup Socket.IO for real-time updates
+    const socket = io(api);
+
+    socket.on("new_job", (data) => {
+      console.log("New job received:", data);
+      loadJobs(); // Reload jobs when a new one arrives
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleFileChange = (e) => {
@@ -49,10 +66,12 @@ export default function Dashboard() {
       });
       alert("File uploaded successfully!");
       setSelectedFile(null);
+      // Clear the file input
+      e.target.reset();
       loadJobs();
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed");
+      alert("Upload failed: " + (err.response?.data?.msg || err.message));
     } finally {
       setUploading(false);
     }

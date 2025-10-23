@@ -121,6 +121,7 @@ export default function Dashboard({
                     <tr>
                       <th>ID</th>
                       <th>File</th>
+                      <th>User</th>
                       <th>Status</th>
                       <th>Node</th>
                     </tr>
@@ -128,7 +129,7 @@ export default function Dashboard({
                   <tbody>
                     {jobs.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="text-center text-muted py-3">
+                        <td colSpan={5} className="text-center text-muted py-3">
                           No jobs yet.
                         </td>
                       </tr>
@@ -138,6 +139,9 @@ export default function Dashboard({
                           <td>{job.id}</td>
                           <td className="text-truncate" style={{ maxWidth: "160px" }}>
                             {job.filename}
+                          </td>
+                          <td className="text-muted">
+                            {job.user || "Unknown"}
                           </td>
                           <td
                             className={`fw-semibold ${
