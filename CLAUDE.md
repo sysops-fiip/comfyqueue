@@ -21,7 +21,6 @@ ComfyQueue is a distributed job queue management system for ComfyUI nodes. It co
   - `auth.py` - Login/auth endpoints (`/api/auth/*`)
   - `users.py` - User CRUD operations (`/api/users/*`)
   - `nodes.py` - Node management endpoints (`/api/nodes/*`)
-  - `nano.py` - Additional node management utilities
   - `config.json` - Node configuration and settings
 
 ### Frontend (React + Vite)
@@ -133,6 +132,6 @@ The Flask app uses a sophisticated routing strategy for SPA support:
 - The project uses TWO separate SQLite databases by design
 - Virtual environment is at `venv/` in project root
 - Node modules are nested: both root-level and `frontend/node_modules/`
-- `nano.py` appears to be a duplicate of `nodes.py` - verify which is canonical
 - Admin key in `config.json` should be environment variable in production
 - JWT secret key should be environment variable in production
+- JWT tokens contain only the username string; role checking requires querying the User model

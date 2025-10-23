@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Node
+from models import db, Node, User
 
 nodes_bp = Blueprint("nodes", __name__)
 
@@ -13,8 +13,10 @@ def list_nodes():
 @nodes_bp.post("/api/nodes/toggle")
 @jwt_required()
 def toggle_node():
-    me = json.loads(get_jwt_identity())
-    if me.get("role") != "admin":
+    current_username = get_jwt_identity()
+    current_user = User.query.filter_by(username=current_username).first()
+
+    if not current_user or current_user.role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
 
     data = request.get_json(force=True)
@@ -30,8 +32,10 @@ def toggle_node():
 @nodes_bp.post("/api/nodes/add")
 @jwt_required()
 def add_node():
-    me = get_jwt_identity()
-    if me.get("role") != "admin":
+    current_username = get_jwt_identity()
+    current_user = User.query.filter_by(username=current_username).first()
+
+    if not current_user or current_user.role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
 
     data = request.get_json(force=True)
