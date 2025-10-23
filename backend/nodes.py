@@ -50,3 +50,44 @@ def add_node():
     db.session.add(n)
     db.session.commit()
     return jsonify({"message": "node added", "id": n.id})
+
+@nodes_bp.put("/api/nodes/<int:node_id>")
+@jwt_required()
+def update_node(node_id):
+    current_username = get_jwt_identity()
+    current_user = User.query.filter_by(username=current_username).first()
+
+    if not current_user or current_user.role != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    node = Node.query.get(node_id)
+    if not node:
+        return jsonify({"error": "node not found"}), 404
+
+    data = request.get_json(force=True)
+    if "name" in data:
+        node.name = data["name"].strip()
+    if "url" in data:
+        node.url = data["url"].strip()
+    if "enabled" in data:
+        node.enabled = bool(data["enabled"])
+
+    db.session.commit()
+    return jsonify({"message": "node updated", "id": node.id})
+
+@nodes_bp.delete("/api/nodes/<int:node_id>")
+@jwt_required()
+def delete_node(node_id):
+    current_username = get_jwt_identity()
+    current_user = User.query.filter_by(username=current_username).first()
+
+    if not current_user or current_user.role != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    node = Node.query.get(node_id)
+    if not node:
+        return jsonify({"error": "node not found"}), 404
+
+    db.session.delete(node)
+    db.session.commit()
+    return jsonify({"message": "node deleted"})
